@@ -1,0 +1,49 @@
+
+
+
+ 1. Gitlab Configuration and Permissins Setups:
+	
+	-Record the name and email address of each user in GitLab.
+	-Ensure that all users have read access (pull) to the git projects and repositories within the demo group.
+	-Set up the necessary permission for branches so that developers can only push to their own branches and merge into dev branch. 
+
+2. PowerShell Script Creation:
+
+	-Write PowerShell scripts to configure GitLab and set user permissions.
+	-Automate the creation of repositories and branches and setting permissions using the scripts.
+
+3. NET Core Project Configuration:
+
+	-Create separate branches for developers in the "babilon" repository, named after themselves.
+	-Set up the necessary permissions so that they can only push to their own branches and merge into the dev branch.
+
+4. Automated Notifications:
+
+	-Integrate email notifications in GitLab to inform developers and the lead1 user about changes in different process steps, commits, and merges.
+
+5. Creation of Build and Test Environment using Docker:
+
+	-Set up two separate Docker containers: one for building and one for testing.
+	-Provide the necessary .NET Core version and Visual Studio in the build environment for compiling.
+	-Automate the build process using scripts, including compiling all projects and running unit tests.
+	-Run tests in the testing environment and record the results.
+
+6. Documentation:
+
+	-Prepare detailed documentation of the process, including configurations, scripts, and notifications.
+	-Explain to developers and the lead1 user how to use the environment and follow the process.
+
+7. Testing:
+
+	-Verify that the process works flawlessly as expected, and notifications are sent correctly.
+	-Ensure that the build and test results are as expected.
+
+8. Creating a Test Container:
+
+	-If the build is successful, create another Windows container suitable for running .NET Core projects.
+	-Copy the compiled Server project files (exe, dll) to the base container.
+	-Start the container and run the compiled Server project inside it.
+
+9. Sending Email Notifications:
+
+	-Send email notifications to test1 and lead1 users with the information about the created test container.
