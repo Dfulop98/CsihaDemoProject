@@ -1,0 +1,1 @@
+#TODO: generate standard gitlab docker image
