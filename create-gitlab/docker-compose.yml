@@ -1,0 +1,29 @@
+version: '3.6'
+services:
+  web:
+    image: 'gitlab/gitlab-ce:latest'
+    container_name: gitlab
+    restart: always
+    ports:
+      - '23080:80'
+      - '23443:443'
+      - '23022:22'
+    networks:
+      gitlab_network:
+        ipv4_address: "192.168.3.240"
+    volumes:
+      - 'gitlab_config:/etc/gitlab'
+      - 'gitlab_logs:/var/log/gitlab'
+      - 'gitlab_data:/var/opt/gitlab'
+      - '../certs:/etc/gitlab/certs'
+    shm_size: '5gb' 
+networks:
+  gitlab_network:
+    ipam:
+      config:
+        - subnet: "192.168.3.240/24"
+volumes:
+  gitlab_config: {}
+  gitlab_data: {}
+  gitlab_logs: {}
+  gitlab_certs: {}

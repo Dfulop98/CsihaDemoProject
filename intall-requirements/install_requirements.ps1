@@ -1,5 +1,6 @@
-$conditionForReboot = "false"
+$conditionForReboot = $false
 $scriptPath = Join-Path $PSScriptRoot "created_self_signed_cert.ps1"
+$DOMAIN = "$1"
 
 $opensslExists = Get-Command openssl -ErrorAction SilentlyContinue
 # Check if OpenSSL is already installed
@@ -33,7 +34,7 @@ if (-not $opensslExists) {
             }
             choco install openssl -y
             Write-Output "OpenSSL successfully installed!"
-            $conditionForReboot = "true"
+            $conditionForReboot = $true
         }
         "n" {
             Write-Output "Please, Manually install OpenSSL from the following link: https://www.openssl.org/source/"
@@ -46,15 +47,24 @@ if (-not $opensslExists) {
     }
 }
 
-if ($conditionForReboot == "true") {
-    $response = Read-Host "After install openSSL, the device restart is important. Would you like to restart now? (y/n)"
+
+if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+    
+    # Telepíti a Docker Desktop-ot
+    choco install docker-desktop -y
+    # Hyper-V és Containers engedélyezése   
+    Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+    Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
+    $conditionForReboot = $true
+}
+
+
+
+if ($conditionForReboot) {
+    $response = Read-Host "After installation process, the device restart is important. Would you like to restart now? (y/n)"
 
     switch($response){
         "y"{
-            $taskAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-File '$scriptPath'"
-            $taskTrigger = New-ScheduledTaskTrigger -AtStartup
-            $taskPrincipal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount
-            Register-ScheduledTask -Action $taskAction -Trigger $taskTrigger -TaskName "RunCertScriptAfterReboot" -Principal $taskPrincipal -Force
             Restart-Computer -Confirm:$false
         }
         "n"{
@@ -67,13 +77,3 @@ if ($conditionForReboot == "true") {
         }
     }
 }
-# Generate private key
-openssl genrsa -out ${DOMAIN}.key 2048
-
-# Generate certificate signing request
-openssl req -new -key ${DOMAIN}.key -out ${DOMAIN}.csr -subj "/C=Hun/ST=Csongrad/L=Szeged/O=Organization/CN=${DOMAIN}"
-
-# Generate self-signed certificate
-openssl x509 -req -days 365 -in ${DOMAIN}.csr -signkey ${DOMAIN}.key -out ${DOMAIN}.crt
-
-Write-Output "Self-signed certificates successfully created: ${DOMAIN}.crt and ${DOMAIN}.key"
