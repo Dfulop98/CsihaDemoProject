@@ -9,28 +9,63 @@ if (Test-Path "installState.txt") {
 
 switch ($installState) {
     "start" {
-        # Chocolatey install
-        Write-Output "Start installing Chocolatey(after this process done, your computer will restart):"
-        Set-ExecutionPolicy Bypass -Scope Process -Force;
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
-	    iex ((Invoke-WebRequest -Uri https://chocolatey.org/install.ps1).Content)
+        if (-not $chocoExists) {
+            $userInputChoco = Read-Host "Chocolatey is not found. Would you like to install now? (y/n)"
+            switch ($userInputChoco){
+                "y" {
+                    Write-Output "Start installing Chocolatey:"
+                    Set-ExecutionPolicy Bypass -Scope Process -Force;
+                    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+                    iex ((Invoke-WebRequest -Uri https://chocolatey.org/install.ps1).Content)
+                    "chocoInstalled" | Out-File "installState.txt"
+                    Restart-Computer
+                }
+                "n" {
+                    Write-Output "Please, Install Chocolatey from here: https://chocolatey.org/install"
+                    exit
+                }
+                
+                default{
+                    Write-Output "Wrong input! try again."
+                    return
+                }
+            }
+        }
         "chocoInstalled" | Out-File "installState.txt"
         Restart-Computer
     }
 
     "chocoInstalled" {
         # OpenSSl install 
-        Write-Output "Start installing OpenSSl:"
-        choco install openssl -y
-        if (-not (Test-Path ../certs/ -PathType Container)) {
-            mkdir ../certs/
-            $confContent = Get-Content .\sslcert.cnf -Raw
-            $confContent = $confContent.Replace("REPLACE_WITH_IP", $ip)
-            Set-Content .\sslcert.cnf -Value $confContent
-            # Generate ssl certs
-            openssl req -x509 -nodes -days 730 -newkey rsa:2048 -keyout ../certs/$ip.key -out ../certs/$ip.crt -config sslcert.cnf -extensions 'v3_req'
-            Write-Output "Self-signed certificates successfully created: $ip.crt and $ip.key"
-        }
+        if (-not $opensslExists) {
+            $userInputOpenSSL = Read-Host "OpenSSL is not found. Would you like to install now? (y/n)"
+        
+            switch ($userInputOpenSSL){
+                "y" {
+                    Write-Output "Start installing OpenSSl:"
+                    choco install openssl -y
+                    if (-not (Test-Path ../certs/ -PathType Container)) {
+                        mkdir ../certs/
+                        $confContent = Get-Content .\sslcert.cnf -Raw
+                        $confContent = $confContent.Replace("REPLACE_WITH_IP", $ip)
+                        Set-Content .\sslcert.cnf -Value $confContent
+                        # Generate ssl certs
+                        openssl req -x509 -nodes -days 730 -newkey rsa:2048 -keyout ../certs/$ip.key -out ../certs/$ip.crt -config sslcert.cnf -extensions 'v3_req'
+                        Write-Output "Self-signed certificates successfully created: $ip.crt and $ip.key"
+                    }
+                    "OpenSSLInstalled" | Out-File "installState.txt"
+                }
+                "n" {
+                    Write-Output "Please, Manually install OpenSSL from the following link: https://www.openssl.org/source/"
+                    exit
+                }
+                default{
+                    Write-Output "Wrong input! try again."
+                    return
+                }
+            }
+        
+        
         "OpenSSLInstalled" | Out-File "installState.txt"
         
     }
@@ -43,8 +78,14 @@ switch ($installState) {
         Restart-Computer
 
     }
-
     "dockerInstalled" {
+        Write-Output "Enabling Hyper-V and container:"
+        Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+	    Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
+        "hyperVSetup" | Out-File "installState.txt"
+        Restart-Computer
+    }
+    "hyperVSetup" {
         Write-Output "Start installing GitLab:"
         if((docker info --format '{{ .OSType }}') -eq 'windows'){
             & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon
