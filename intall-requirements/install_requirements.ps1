@@ -52,9 +52,8 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     
     # Telepíti a Docker Desktop-ot
     choco install docker-desktop -y
-    # Hyper-V és Containers engedélyezése   
-    Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
-    Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
+    # Wsl update
+    wsl --update
     $conditionForReboot = $true
 }
 

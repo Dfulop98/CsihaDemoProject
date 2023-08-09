@@ -12,7 +12,7 @@ L = Szeged
 O = Szemelyes
 OU = Szemelyes
 emailAddress = email@example.com
-CN = REPLACE_WITH_IP
+CN = 192.168.3.240
 
 [ req_ext ]
 subjectAltName = @alt_names
@@ -23,13 +23,14 @@ keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 subjectAltName = @alt_names
 
 [ alt_names ]
-DNS.1 = REPLACE_WITH_IP
-IP.1 = REPLACE_WITH_IP
+DNS.1 = 192.168.3.240
+IP.1 = 192.168.3.240
 
 [ v3_ca ]
 subjectAltName = @alt_names
 keyUsage = cRLSign, keyCertSign
 basicConstraints = CA:true
+
 
 
 

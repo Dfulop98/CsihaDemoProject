@@ -1,7 +1,7 @@
 
 # Babilon
 
-In this project, we automated a multi-step development and testing process within a specific technological environment. The system supports collaboration between developers, development team leaders, and testers, facilitating information flow through email notifications.
+In this project, I automated a multi-step development and testing process within a specific technological environment. The system supports collaboration between developers, development team leaders, and testers, facilitating information flow through email notifications.
 
 ## Tech Stack
 **SCM Server:** Gitlab  
@@ -73,14 +73,41 @@ The last part of the script launches the docker-compose yaml file. In the docker
 
 After the installation, you will need to wait a few minutes before the GitLab server becomes available at the following address:
 ```
-    https://{your_local_ip}:23080
+    https://{your_local_ip}:23443
+```
+#### Gitlab Reconfigure
+To make sure all configuration is saved, you need reconfigure the gitlab server, and restart the docker container also suggested
+```
+    docker exec -it gitlab-server  gitlab-ctl reconfigure
+    docker restart gitlab-server
 ```
 
 #### Get initial root password:
 
+Run the following command to get a root user password:
+```
+    docker exec -it gitlab-server cat /etc/gitlab/intial_root_password
+```
+
 #### Login into Gitlab with root user:
 
+Now Gitlab server done to use. Go to https.{your_local_ip}:23443
+```
+    username: root
+    password: (what you get in the previous task)
+```
+
 #### Edit root user:
+
+After login, click your avatar in the left top corner, and Edit profile.
+Below you'll see the main profile setting, setup the administrator account as you wish.
+
+In the left sidebar you'll see a Password link, there you can change the root user password.
+
+## Create Group and Project
+
+After a gitlab installation process
+## Gitlab Runners
 ## Run Locally
 
 Clone the project
