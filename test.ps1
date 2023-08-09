@@ -7,7 +7,7 @@ if (Test-Path "installState.txt") {
     $installState = "start"
 }
 
-switch ($installState) {
+switch ($installState){
     "start" {
         if (-not $chocoExists) {
             $userInputChoco = Read-Host "Chocolatey is not found. Would you like to install now? (y/n)"
@@ -65,9 +65,8 @@ switch ($installState) {
                 }
             }
         
-        
+        }
         "OpenSSLInstalled" | Out-File "installState.txt"
-        
     }
 
     "OpenSSLInstalled" {
@@ -85,6 +84,7 @@ switch ($installState) {
         "hyperVSetup" | Out-File "installState.txt"
         Restart-Computer
     }
+
     "hyperVSetup" {
         Write-Output "Start installing GitLab:"
         if((docker info --format '{{ .OSType }}') -eq 'windows'){
