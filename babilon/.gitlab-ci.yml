@@ -1,0 +1,240 @@
+
+# QUESTIONS:
+#   docker_container_build:
+#     build windows container is the task,  from mcr.microsoft.com/dotnet/sdk:7.0 image
+#     will be windows container or linux just with dotnet sdk enviroment
+#     
+
+# Define variables used in the pipeline
+variables:
+  SENDER_EMAIL: "RentalMaster@proton.me"
+  SENDER_NAME: "RentalMaster"
+  LEAD_EMAIL: "dobo.fulop97+lead1leader.alias@gmail.com"
+  TEST_EMAIL: "dobo.fulop97+test1tester.alias@gmail.com"
+  GIT_SSL_NO_VERIFY: "1"  # Disable SSL verification for Git
+  CI_DEBUG_TRACE: "false"  # Disable debug trace
+  ASSEMBLY_VERSION: "1.0.$(CI_PIPELINE_ID)"  # Set the assembly version
+
+# Define the stages of the pipeline
+stages:
+  - notify  # Notification stage
+  - build  # Build stage
+  - test  # Test stage
+  - archive  # Archive stage
+  - notify_result # Result notification stage
+
+# Define the before_script that will be executed before each job
+before_script:
+  - |
+    # Check the OS release and install necessary dependencies
+    if cat /etc/*release | grep -q -i "alpine"; then
+      apk update
+      apk add bash curl git jq
+      apk add ca-certificates
+      cp $CI_SERVER_TLS_CA_FILE /usr/local/share/ca-certificates/192.168.2.234.crt
+      update-ca-certificates
+      apk update;
+    elif cat /etc/*release | grep -q -i "debian"; then
+      apt-get update
+      apt-get install -y bash curl git;
+    elif cat /etc/*release | grep -q -i "ubuntu"; then
+      apt-get update
+      apt-get install -y bash curl git;
+    fi
+    
+
+# Define the "notify_dev_merge" job
+notify_on_merge_to_dev:
+  stage: notify  # Set the stage to "notify"
+  script:
+    - |
+      # Extract commit information
+      commit_author=$(git log -1 --pretty=format:'%an') 
+      commit_author_email=$(git log -1 --pretty=format:'%ae')
+      commit_date=$(git log -1 --pretty=format:'%ai')
+      commit_message=$(git log -1 --pretty=format:'%B')
+      commit_data="Commit author: ${commit_author}\nCommit author email: ${commit_author_email}\nCommit date: ${commit_date}\nCommit message: ${commit_message}\n"
+      subject="New commit notifications"
+      ls -la .gitlab/
+      bash .gitlab/email_send.sh "$LEAD_EMAIL" "$subject" "$commit_data" "$SENDER_EMAIL" "$SENDER_NAME" "$SENDGRID_API_KEY"
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev" && $CI_PIPELINE_SOURCE == "merge_request_event"  # Only run if the target branch is "dev" and the source is a merge request
+  tags:
+    - notification  # Use the "notify" runner tag
+
+# Define the "notify_dev_test_merge" job
+notify_on_merge_to_test:
+  stage: notify  # Set the stage to "notify"
+  script:
+    - |
+      bash <<-'EOF'
+      # Clone the repository and extract branch information
+      source_branch="${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+      target_branch="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+      prev_commits_hashes=$(git log --pretty=format:'%H' --no-merges origin/$target_branch..origin/$source_branch)
+      commit_data=""
+      email_list=()
+      subject="Development Branch merged into test branch"
+      for commit_hash in $prev_commits_hashes
+      do
+        # Extract commit information
+        commit_author_email=$(git show -s --pretty=format:'%ae' $commit_hash)
+        commit_author=$(git show -s --pretty=format:'%an' $commit_hash)
+        commit_date=$(git show -s --pretty=format:'%ai' $commit_hash)
+        commit_message=$(git show -s --pretty=format:'%B' $commit_hash)
+        commit_data+="${commit_author}\n ${commit_author_email}\n ${commit_date}\n ${commit_message}\n"
+        email_list+=($commit_author_email)
+      done
+      email_string=$(printf "%s\n" "${email_list[@]}")
+      email_list=($(echo "$email_string" | awk '!seen[$0]++'))
+      for email_to in "${email_list[@]}"
+      do
+        bash .gitlab/email_send.sh "$email_to" "$subject" "$commit_data" "$SENDER_EMAIL" "$SENDER_NAME" "$SENDGRID_API_KEY"
+      done
+      EOF
+    
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "dev" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "test"  # Only run if the source branch is "dev" and the target branch is "test"
+  tags:
+    - notification  # Use the "notification" runner tag
+
+#build template
+.build_template: &build_template
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:7.0
+  script:
+    - dotnet build $PROJECT_PATH -c Release -o $ASSEMBLY_VERSION -p:Version=$ASSEMBLY_VERSION -v n > build.log
+
+  artifacts:
+    paths:
+      - build.log
+      - $ASSEMBLY_VERSION
+    expire_in: 1 week
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "test" && $CI_PIPELINE_SOURCE == "merge_request_event"'
+  tags:
+    - build
+
+.test_template: &test_template
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:7.0
+  script:
+    - dotnet test $PROJECT_PATH --no-restore -v n > test.log
+  artifacts:
+    paths:
+      - test.log
+    expire_in: 1 week
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "test" && $CI_PIPELINE_SOURCE == "merge_request_event"'
+  tags:
+    - test
+
+# Define the "build_lib_on_testbranch" job
+build_lib:
+  <<: *build_template
+  variables:
+    PROJECT_PATH: 'Lib/Lib.csproj'
+    OUTPUT_DIR: '$CI_PROJECT_DIR/build/Lib'
+# Define the "test_lib_on_testbranch" job
+test_lib:
+  <<: *test_template
+  variables:
+    PROJECT_PATH: 'Lib/Lib.csproj'
+  needs: ["build_lib"]
+  
+
+# Define the "build_client_on_testbranch" job
+build_client:
+  <<: *build_template
+  variables:
+    PROJECT_PATH: 'Client/Client.csproj'
+    OUTPUT_DIR: '$CI_PROJECT_DIR/build/Client'
+  needs: ["build_lib"]
+# Define the "test_client_on_testbranch" job
+test_client:
+  <<: *test_template
+  variables:
+    PROJECT_PATH: 'Client/Client.csproj'
+  needs: ["build_client"]
+  
+
+# Define the "build_server_on_testbranch" job
+build_server:
+  <<: *build_template
+  variables:
+    PROJECT_PATH: 'Server/Server.csproj'
+    OUTPUT_DIR: '$CI_PROJECT_DIR/build/Server'
+  needs: ["build_client"]
+# Define the "test_server_on_testbranch" job
+test_server:
+  <<: *test_template
+  variables:
+    PROJECT_PATH: 'Server/Server.csproj'
+  needs: ["build_server"]
+
+
+# Define the "archive_on_testbranch" job
+archive_test_results:
+  stage: archive  # Set the stage to "archive"
+  image: mcr.microsoft.com/dotnet/sdk:7.0  # Use the .NET SDK 7.0 image
+  script:
+    # Archive the results
+    
+    - mkdir -p $CI_PROJECT_DIR/artifacts/$ASSEMBLY_VERSION  # Create a directory for artifacts
+    - tar -zcf $CI_PROJECT_DIR/artifacts/$ASSEMBLY_VERSION/source_files.tar.gz **/*.cs  # Archive source files
+    - tar -zcf $CI_PROJECT_DIR/artifacts/$ASSEMBLY_VERSION/built_files.tar.gz ./build/**/*.dll  # Archive built files
+    - mv build.log test.log $CI_PROJECT_DIR/artifacts/$ASSEMBLY_VERSION/  # Move build and test logs to artifacts directory
+
+  artifacts:
+    paths:
+      - artifacts/  # Archive the artifacts directory
+    expire_in: 1 week  # Set the expiration time for artifacts
+  
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "test" && $CI_PIPELINE_SOURCE == "merge_request_event"'  # Only run if the target branch is "test" and the source is a merge request
+  tags:
+    - archive  # Use the "archive" runner tag
+
+
+notify_from_merge_result:
+  stage: notify_result
+  script:
+    - |
+        bash <<-'EOF'
+        # Clone the repository and extract branch information
+        source_branch="${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+        target_branch="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+        prev_commits_hashes=$(git log --pretty=format:'%H' --no-merges origin/$target_branch..origin/$source_branch)
+        build_success=$(grep -q "Build succeeded." $CI_PROJECT_DIR/artifacts/$ASSEMBLY_VERSION/build.log && echo "yes" || echo "no")
+        test_success=$(grep -q "Build succeeded." $CI_PROJECT_DIR/artifacts/$ASSEMBLY_VERSION/test.log && echo "yes" || echo "no")
+        commit_data="Build success: ${build_success}\nTest success: ${test_success}\n"
+        subject="Development Branch merged into test branch"
+        base64_content_build=$CI_PROJECT_DIR/artifacts/$ASSEMBLY_VERSION/build.log
+        base64_content_test=$CI_PROJECT_DIR/artifacts/$ASSEMBLY_VERSION/test.log
+        echo $base64_content_build
+        for commit_hash in $prev_commits_hashes
+        do
+          # Extract commit information
+          commit_author_email=$(git show -s --pretty=format:'%ae' $commit_hash)
+          commit_author=$(git show -s --pretty=format:'%an' $commit_hash)
+          commit_date=$(git show -s --pretty=format:'%ai' $commit_hash)
+          commit_message=$(git show -s --pretty=format:'%B' $commit_hash)
+          commit_data+="${commit_author}\n ${commit_author_email}\n ${commit_date}\n ${commit_message}\n"
+        done
+        bash .gitlab/email_send.sh "$LEAD_EMAIL" "$subject" "$commit_data" "$SENDER_EMAIL" "$SENDER_NAME" "$SENDGRID_API_KEY" "$base64_content_build" "$base64_content_test"
+        EOF
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "test" && $CI_PIPELINE_SOURCE == "merge_request_event"'
+  when: always
+  tags:
+    - notification  # Use the "notify" runner tag
+   
+docker_container_build:
+  stage: docker
+  script:
+    - docker build -t demo-server:$(date +%Y%m%d%H%M%S) .
+    - docker run -d -p 7041:80 my-server
+  only:
+    - test
+  tags:
+    - dockerizer
