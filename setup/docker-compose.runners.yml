@@ -1,0 +1,75 @@
+version: "3"
+
+services:
+  notification_runner:
+    image: gitlab/gitlab-runner:latest
+    networks:
+      - gitlab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CI_SERVER_URL=https://REPLACE_WITH_IP
+      - REGISTRATION_TOKEN=glrt-Himqg3K_Em1xcRm8qPtT
+      - RUNNER_NAME=notification_runner
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=docker:stable
+      - RUNNER_TAGS=notification
+
+  build_runner:
+    image: gitlab/gitlab-runner:latest
+    networks:
+      - gitlab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CI_SERVER_URL=https://REPLACE_WITH_IP
+      - REGISTRATION_TOKEN=glrt-K-eZxzAM69NhuGnJhzJA
+      - RUNNER_NAME=build_runner
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=docker:stable
+      - RUNNER_TAGS=build
+  test_runner:
+    image: gitlab/gitlab-runner:latest
+    networks:
+      - gitlab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CI_SERVER_URL=https://REPLACE_WITH_IP
+      - REGISTRATION_TOKEN=glrt-febXWxnEas7iJhzjjNMG
+      - RUNNER_NAME=test_runner
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=docker:stable
+      - RUNNER_TAGS=test
+
+  archive_runner:
+    image: gitlab/gitlab-runner:latest
+    networks:
+      - gitlab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CI_SERVER_URL=https://REPLACE_WITH_IP
+      - REGISTRATION_TOKEN=glrt-pGR-9yqG1rxBy_kyZojf
+      - RUNNER_NAME=archive_runner
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=docker:stable
+      - RUNNER_TAGS=archive
+
+  dockerizer_runner:
+    image: gitlab/gitlab-runner:latest
+    networks:
+      - gitlab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CI_SERVER_URL=https://REPLACE_WITH_IP
+      - REGISTRATION_TOKEN=glrt-qM3dkkCWxBMgAMEcYFVX
+      - RUNNER_NAME=dockerizer_runner
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=mcr.microsoft.com/windows/nanoserver:ltsc2019
+      - RUNNER_TAGS=dockerizer
+
+networks:
+  gitlab_network:
+    external: true

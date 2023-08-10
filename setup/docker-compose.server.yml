@@ -1,0 +1,39 @@
+version: "3.6"
+services:
+  web:
+    image: "gitlab/gitlab-ce:latest"
+    networks:
+      - gitlab_network
+    container_name: gitlab-server
+    command: /bin/bash -c "./allow_gitlab_ssl.sh && /assets/wrapper"
+    restart: always
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://REPLACE_WITH_IP'
+        letsencrypt['enable'] = false
+        nginx['redirect_http_to_https'] = false
+        nginx['ssl_certificate'] = '/etc/gitlab/ssl/REPLACE_WITH_IP.crt'
+        nginx['ssl_certificate_key'] = '/etc/gitlab/ssl/REPLACE_WITH_IP.key'
+
+    ports:
+      - "23080:80"
+      - "23443:443"
+      - "23022:22"
+    volumes:
+      - "gitlab_config:/etc/gitlab"
+      - "gitlab_logs:/var/log/gitlab"
+      - "gitlab_data:/var/opt/gitlab"
+      - "../certs:/etc/gitlab/ssl"
+      - "./allow_gitlab_ssl.sh:/allow_gitlab_ssl.sh"
+
+    shm_size: "5gb"
+
+volumes:
+  gitlab_config:
+  gitlab_data:
+  gitlab_logs:
+  gitlab_certs:
+
+networks:
+  gitlab_network:
+    external: true
