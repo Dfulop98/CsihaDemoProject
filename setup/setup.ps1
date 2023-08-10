@@ -143,12 +143,12 @@ switch ($installState){
                     Write-Output "SSH key already exists!"
                     return
                 }
-                ssh-keygen -t rsa -b 4096 -C $yourEmail -f "~/.ssh/$sshKeyName"
+                ssh-keygen -t rsa -b 4096 -C $yourEmail -f "C:\\Users\\$env:USERNAME\\.ssh\\$sshKeyName"
                 # Copy SSH Key to Clipboard
-                Get-Content "~/.ssh/$sshKeyName.pub" | Set-Clipboard
+                Get-Content "C:\\Users\\$env:USERNAME\\.ssh\\$sshKeyName.pub" | Set-Clipboard
                 Write-Host "SSH Public Key has been copied to clipboard."
                 # Configure SSH for custom port
-                $env:GIT_SSH_COMMAND = "ssh -i C:\\Users\\$env:USERNAME\\.ssh\\[$sshKeyName] -p 23022"
+                $env:GIT_SSH_COMMAND = "ssh -i C:\\Users\\$env:USERNAME\\.ssh\\$sshKeyName -p 23022"
                 Write-Host "SSH Configuration completed."
             }
             "n"{
@@ -160,7 +160,8 @@ switch ($installState){
                 return
             }
         }
-        Write-Host "Your password: " docker exec -it gitlab-server cat /etc/gitlab/initial_root_password | Select-String "Password:" | ForEach-Object { $_.ToString().Split(':')[1].Trim() }
+        $password = docker exec -it gitlab-server cat /etc/gitlab/initial_root_password | Select-String "Password:" | ForEach-Object { $_.ToString().Split(':')[1].Trim() }
+        Write-Host "Your password: $password" 
         Write-Host "Now, log in to GitLab at https://$ip:23443 using 'root' as the username and the provided root password. Add your SSH key to your profile, and you're all set to clone repositories!"
 
     }
