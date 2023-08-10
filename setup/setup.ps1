@@ -148,7 +148,7 @@ switch ($installState){
                 Get-Content "~/.ssh/$sshKeyName.pub" | Set-Clipboard
                 Write-Host "SSH Public Key has been copied to clipboard."
                 # Configure SSH for custom port
-                $env:GIT_SSH_COMMAND = "ssh -i C:\Users\$env:USERNAME\.ssh\[$sshKeyName] -p 23022"
+                $env:GIT_SSH_COMMAND = "ssh -i C:\\Users\\$env:USERNAME\\.ssh\\[$sshKeyName] -p 23022"
                 Write-Host "SSH Configuration completed."
             }
             "n"{
