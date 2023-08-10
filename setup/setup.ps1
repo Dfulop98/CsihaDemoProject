@@ -1,5 +1,5 @@
 
-$ip = (Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias Ethernet).IPAddress
+$ip = (Get-NetIPAddress | Where-Object { ($_.InterfaceAlias -like "*Wi-Fi*" -or $_.InterfaceAlias -like "*Ethernet*") -and $_.AddressState -eq "Preferred" -and $_.ValidLifetime -lt "24:00:00" }).IPAddress
 
 if (Test-Path "installState.txt") {
     $installState = Get-Content "installState.txt"
@@ -38,6 +38,7 @@ switch ($installState){
     }
 
     "chocoInstalled" {
+        $restart = $false
         # OpenSSl install 
         $opensslExists = (Get-Command openssl -ErrorAction SilentlyContinue) -ne $null
         if (-not $opensslExists) {
@@ -69,28 +70,46 @@ switch ($installState){
                         Write-Output "Self-signed certificates successfully created: $ip.crt and $ip.key"
                     }
         Write-Output "Start installing Docker desktop:"
-        choco install docker-desktop -y
+        $dockerInstalled = $null -ne (Get-Command docker -ErrorAction SilentlyContinue)
+        if (-not $dockerInstalled) {
+            choco install docker-desktop -y
+            $restart = $true
+        }
         wsl --update
         "dockerOpenSSLInstalled" | Out-File "installState.txt"
-        Restart-Computer
+        if($restart){
+            Restart-Computer
+        }
     }
 
     "dockerOpenSSLInstalled" {
-        Write-Output "Enabling Hyper-V and container:[3/4]"
         $restart = $false
-        $hyperVEnabled = (Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All).State -eq 'Enabled'
+        Write-Output "Enabling Hyper-V and container:[3/4]"
+        Write-Output "Checking Hyper-V..."
+        $hyperVEnabled = (dism.exe /online /get-featureinfo /featurename:Microsoft-Hyper-V) -like "*State : Enabled*"
+
         if(-not $hyperVEnabled){
             Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
             $restart = $true
         }
-        $containersEnabled = (Get-WindowsOptionalFeature -Online -FeatureName Containers-All).State -eq 'Enabled'
+        else{
+            Write-Output "Hyper-V is already enabled."
+        }
+        Write-Output "Checking Containers..."
+        $containersEnabled = (dism.exe /online /get-featureinfo /featurename:Containers) -like "*State : Enabled*"
         if(-not $containersEnabled){
             Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
             $restart = $true
         }
+        else{
+            Write-Output "Containers are already enabled."
+        }
         "hyperVSetup" | Out-File "installState.txt"
         if($restart){
             Restart-Computer
+        }
+        else{
+            exit
         }
     }
 
@@ -100,14 +119,19 @@ switch ($installState){
             & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon
         }
         $serverComposeContent = Get-Content .\docker-compose.server.yml -Raw
-        $runnersComposeContent = Get-Content .\docker-compose.server.yml -Raw
+        $runnersComposeContent = Get-Content .\docker-compose.runners.yml -Raw
         $serverComposeContent = $serverComposeContent.Replace("REPLACE_WITH_IP", $ip)
         $runnersComposeContent = $runnersComposeContent.Replace("REPLACE_WITH_IP", $ip)
-        Set-Content .\docker-compose.server.yml -Value $composeContent
+        Set-Content .\docker-compose.server.yml -Value $serverComposeContent
         Set-Content .\docker-compose.runners.yml -Value $runnersComposeContent
-        docker-compose -f docker-compose.server.yml up -d
+        try {
+            docker-compose -f docker-compose.server.yml up -d
+        } catch {
+            Write-Output "Error starting docker-compose: $_"
+            exit 1
+        }
         Write-Output "Wait a couple minutes for GitLab server to be ready, and contiue the setup."
-        Start-Sleep -Seconds 180
+        Start-Sleep -Seconds 30
         docker exec -it gitlab-server gitlab-ctl reconfigure
         docker restart gitlab-server
         $response = Read-Host "For perminission to access the repostiories through SSH, would you like generate ssh key? (y/n)"
@@ -121,10 +145,10 @@ switch ($installState){
                 }
                 ssh-keygen -t rsa -b 4096 -C $yourEmail -f "~/.ssh/$sshKeyName"
                 # Copy SSH Key to Clipboard
-                cat "~/.ssh/$sshKeyName.pub" | xclip -selection clipboard
+                Get-Content "~/.ssh/$sshKeyName.pub" | Set-Clipboard
                 Write-Host "SSH Public Key has been copied to clipboard."
                 # Configure SSH for custom port
-                $env:GIT_SSH_COMMAND = "ssh -i C:\Users\[username]\.ssh\[$sshKeyName] -p 23022"
+                $env:GIT_SSH_COMMAND = "ssh -i C:\Users\$env:USERNAME\.ssh\[$sshKeyName] -p 23022"
                 Write-Host "SSH Configuration completed."
             }
             "n"{
@@ -136,6 +160,7 @@ switch ($installState){
                 return
             }
         }
+        Write-Host "Your password: " docker exec -it gitlab-server cat /etc/gitlab/initial_root_password | Select-String "Password:" | ForEach-Object { $_.ToString().Split(':')[1].Trim() }
         Write-Host "Now, log in to GitLab at https://$ip:23443 using 'root' as the username and the provided root password. Add your SSH key to your profile, and you're all set to clone repositories!"
 
     }
