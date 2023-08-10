@@ -9,6 +9,7 @@ if (Test-Path "installState.txt") {
 Write-Output "This installing process is totally 4 part. After each part the computer will restart, and you have to run again the script."
 switch ($installState){
     "start" {
+        $chocoExists = (Get-Command choco -ErrorAction SilentlyContinue) -ne $null
         if (-not $chocoExists) {
             $userInputChoco = Read-Host "Chocolatey is not found. Would you like to install now? (y/n)[1/4]"
             switch ($userInputChoco){
@@ -38,6 +39,7 @@ switch ($installState){
 
     "chocoInstalled" {
         # OpenSSl install 
+        $opensslExists = (Get-Command openssl -ErrorAction SilentlyContinue) -ne $null
         if (-not $opensslExists) {
             $userInputOpenSSL = Read-Host "OpenSSL is not found. Would you like to install now? (y/n)[2/4]"
         
@@ -74,15 +76,26 @@ switch ($installState){
     }
 
     "dockerOpenSSLInstalled" {
-        Write-Output "Enabling Hyper-V and container:"
-        Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
-	    Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
+        Write-Output "Enabling Hyper-V and container:[3/4]"
+        $restart = $false
+        $hyperVEnabled = (Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All).State -eq 'Enabled'
+        if(-not $hyperVEnabled){
+            Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+            $restart = $true
+        }
+        $containersEnabled = (Get-WindowsOptionalFeature -Online -FeatureName Containers-All).State -eq 'Enabled'
+        if(-not $containersEnabled){
+            Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
+            $restart = $true
+        }
         "hyperVSetup" | Out-File "installState.txt"
-        Restart-Computer
+        if($restart){
+            Restart-Computer
+        }
     }
 
     "hyperVSetup" {
-        Write-Output "Start installing GitLab:"
+        Write-Output "Start installing GitLab:[4/4]"
         if((docker info --format '{{ .OSType }}') -eq 'windows'){
             & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon
         }
