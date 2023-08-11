@@ -16,74 +16,74 @@ services:
     networks:
       - gitlab_network
 
-  # notification_runner:
-  #   image: gitlab/gitlab-runner:latest
-  #   networks:
-  #     - gitlab_network
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   environment:
-  #     - CI_SERVER_URL=https://192.168.3.240
-  #     - REGISTRATION_TOKEN=glrt-dkbLQWysfGss42zwQi8b
-  #     - RUNNER_NAME=notification_runner
-  #     - RUNNER_EXECUTOR=docker
-  #     - DOCKER_IMAGE=docker:stable
-  #     - RUNNER_TAGS=notification
+  notification_runner:
+    image: gitlab/gitlab-runner:latest
+    networks:
+      - gitlab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CI_SERVER_URL=https://192.168.3.240
+      - REGISTRATION_TOKEN=glrt-Qe7LvFRgFyPLkSbLtXNy
+      - RUNNER_NAME=notification_runner
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=docker:stable
+      - RUNNER_TAGS=notification
 
-  # build_runner:
-  #   image: gitlab/gitlab-runner:latest
-  #   networks:
-  #     - gitlab_network
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   environment:
-  #     - CI_SERVER_URL=https://192.168.3.240
-  #     - REGISTRATION_TOKEN=glrt-N91QtPHmZqS8pULF2sHx
-  #     - RUNNER_NAME=build_runner
-  #     - RUNNER_EXECUTOR=docker
-  #     - DOCKER_IMAGE=docker:stable
-  #     - RUNNER_TAGS=build
-  # test_runner:
-  #   image: gitlab/gitlab-runner:latest
-  #   networks:
-  #     - gitlab_network
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   environment:
-  #     - CI_SERVER_URL=https://192.168.3.240
-  #     - REGISTRATION_TOKEN=glrt-fW7TfjMjcYy9uxe3qsH_
-  #     - RUNNER_NAME=test_runner
-  #     - RUNNER_EXECUTOR=docker
-  #     - DOCKER_IMAGE=docker:stable
-  #     - RUNNER_TAGS=test
+  build_runner:
+    image: gitlab/gitlab-runner:latest
+    networks:
+      - gitlab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CI_SERVER_URL=https://192.168.3.240
+      - REGISTRATION_TOKEN=glrt-xPGszsm8V6f_QyecRyUS
+      - RUNNER_NAME=build_runner
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=docker:stable
+      - RUNNER_TAGS=build
+  test_runner:
+    image: gitlab/gitlab-runner:latest
+    networks:
+      - gitlab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CI_SERVER_URL=https://192.168.3.240
+      - REGISTRATION_TOKEN=glrt-zB6kGaTpHZmiemxTR1j8
+      - RUNNER_NAME=test_runner
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=docker:stable
+      - RUNNER_TAGS=test
 
-  # archive_runner:
-  #   image: gitlab/gitlab-runner:latest
-  #   networks:
-  #     - gitlab_network
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   environment:
-  #     - CI_SERVER_URL=https://192.168.3.240
-  #     - REGISTRATION_TOKEN=glrt-w2CTzghRiHcsupoc6nBm
-  #     - RUNNER_NAME=archive_runner
-  #     - RUNNER_EXECUTOR=docker
-  #     - DOCKER_IMAGE=docker:stable
-  #     - RUNNER_TAGS=archive
+  archive_runner:
+    image: gitlab/gitlab-runner:latest
+    networks:
+      - gitlab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CI_SERVER_URL=https://192.168.3.240
+      - REGISTRATION_TOKEN=glrt-6kS-74CxppUbzMMUJfky
+      - RUNNER_NAME=archive_runner
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=docker:stable
+      - RUNNER_TAGS=archive
 
-  # dockerizer_runner:
-  #   image: gitlab/gitlab-runner:latest
-  #   networks:
-  #     - gitlab_network
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   environment:
-  #     - CI_SERVER_URL=https://192.168.3.240
-  #     - REGISTRATION_TOKEN=glrt-Cziy_YxhfB_bh7aCFwaJ
-  #     - RUNNER_NAME=dockerizer_runner
-  #     - RUNNER_EXECUTOR=docker
-  #     - DOCKER_IMAGE=mcr.microsoft.com/windows/nanoserver:ltsc2019
-  #     - RUNNER_TAGS=dockerizer
+  dockerizer_runner:
+    image: gitlab/gitlab-runner:latest
+    networks:
+      - gitlab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CI_SERVER_URL=https://192.168.3.240
+      - REGISTRATION_TOKEN=glrt-Nphj5Ro7aftq1vmAhfse
+      - RUNNER_NAME=dockerizer_runner
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=mcr.microsoft.com/windows/nanoserver:ltsc2019
+      - RUNNER_TAGS=dockerizer
 
 volumes:
   gitlab_config:
