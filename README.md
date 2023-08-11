@@ -276,6 +276,8 @@ Once you're done with all these settings, you will have the permission to clone 
 Now you successfully added a new SSH key, and now you can reach the Repositories
 ## Gitlab Runner Installation
 
+A GitLab Runner is a tool that executes jobs in GitLab CI/CD pipelines, allowing automated testing and deployment. It's essential for streamlining the development process and ensuring efficient code integration.
+
 While you need to connect gitlab server and gitlab runners, you'll need to create Docker network:
 ```
     docker network create gitlab_network
@@ -306,42 +308,12 @@ If you wish to add a new user to our GitLab system without them having an existi
 - Once completed, click the "Create User" button.
 
 By doing so, you've created a new user account without the user having an existing GitLab account. You can now add this user to projects or groups within the system.
-## Run Locally
-
-Clone the project
-
-```bash
-  git clone https://link-to-project
+# Run demo project
+Go to babilon_demo folder, simple run:
 ```
-
-Go to the project directory
-
-```bash
-  cd my-project
+    docker-compose up -d
 ```
-
-Install dependencies
-
-```bash
-  npm install
-```
-
-Start the server
-
-```bash
-  npm run start
-```
-
-
-## Deployment
-
-To deploy this project run
-
-```bash
-  npm run deploy
-```
-
-
+This command will pull the project created by the test task from Docker Hub as an image and will start the runners set up for it. I've attached the login details in a private email, but those with expertise can log in without them.
 ## Optimizations
 
 What optimizations did you make in your code? E.g. refactors, performance improvements, accessibility
@@ -372,11 +344,4 @@ function App() {
   return <Component />
 }
 ```
-
-
-## Roadmap
-
-- Additional browser support
-
-- Add more integrations
 
