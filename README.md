@@ -290,8 +290,22 @@ After you created a network, you'll have to generate Tokens for the runners.
 - New project runner
 - Give tags, description and create runner
 
+After creating a gitlab runner, platform will give you an information about a runner.(how to regist, token)
 
-## Smtp Service
+You can following the instructions, what the platform give to you, or in a setup folder you'll find docker-compose.runners.yml. These runners was created to my demo project, so the gitlab runner tokens are already defined, but you can see how this configuration has to be looks like.
+
+Cuz, we run gitlab server in docker network, suggested to make a runners in the same network. (best practice if you make compose for them)
+## Add Gitlab users
+
+If you wish to add a new user to our GitLab system without them having an existing account, follow these steps:
+- Log into your GitLab system as an administrator.
+- In the main menu, select the "Admin Area" option.
+- Within the Admin Area's sidebar, click on the "Users" option.
+- From here, click on the "New User" button.
+- Fill out the necessary information to create the user, such as their email address, password, and other related details.
+- Once completed, click the "Create User" button.
+
+By doing so, you've created a new user account without the user having an existing GitLab account. You can now add this user to projects or groups within the system.
 ## Run Locally
 
 Clone the project

@@ -1,7 +1,7 @@
 version: "3.6"
 
 services:
-  notification_runner:
+  example_runner:
     image: gitlab/gitlab-runner:latest
     networks:
       - gitlab_network
@@ -9,66 +9,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - CI_SERVER_URL=https://REPLACE_WITH_IP
-      - REGISTRATION_TOKEN=glrt-Himqg3K_Em1xcRm8qPtT
-      - RUNNER_NAME=notification_runner
-      - RUNNER_EXECUTOR=docker
-      - DOCKER_IMAGE=docker:stable
-      - RUNNER_TAGS=notification
+      - REGISTRATION_TOKEN=REPLACE_WITH_TOKEN
+      - RUNNER_NAME=REPLACE_WITH_NAME
+      - RUNNER_EXECUTOR=REPLACE_WITH_EXECUTOR
+      - DOCKER_IMAGE=REPLACE_WITH_IMAGE
+      - RUNNER_TAGS=REPLACE_WITH_TAGS
 
-  build_runner:
-    image: gitlab/gitlab-runner:latest
-    networks:
-      - gitlab_network
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - CI_SERVER_URL=https://REPLACE_WITH_IP
-      - REGISTRATION_TOKEN=glrt-K-eZxzAM69NhuGnJhzJA
-      - RUNNER_NAME=build_runner
-      - RUNNER_EXECUTOR=docker
-      - DOCKER_IMAGE=docker:stable
-      - RUNNER_TAGS=build
-  test_runner:
-    image: gitlab/gitlab-runner:latest
-    networks:
-      - gitlab_network
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - CI_SERVER_URL=https://REPLACE_WITH_IP
-      - REGISTRATION_TOKEN=glrt-febXWxnEas7iJhzjjNMG
-      - RUNNER_NAME=test_runner
-      - RUNNER_EXECUTOR=docker
-      - DOCKER_IMAGE=docker:stable
-      - RUNNER_TAGS=test
-
-  archive_runner:
-    image: gitlab/gitlab-runner:latest
-    networks:
-      - gitlab_network
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - CI_SERVER_URL=https://REPLACE_WITH_IP
-      - REGISTRATION_TOKEN=glrt-pGR-9yqG1rxBy_kyZojf
-      - RUNNER_NAME=archive_runner
-      - RUNNER_EXECUTOR=docker
-      - DOCKER_IMAGE=docker:stable
-      - RUNNER_TAGS=archive
-
-  dockerizer_runner:
-    image: gitlab/gitlab-runner:latest
-    networks:
-      - gitlab_network
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - CI_SERVER_URL=https://REPLACE_WITH_IP
-      - REGISTRATION_TOKEN=glrt-qM3dkkCWxBMgAMEcYFVX
-      - RUNNER_NAME=dockerizer_runner
-      - RUNNER_EXECUTOR=docker
-      - DOCKER_IMAGE=mcr.microsoft.com/windows/nanoserver:ltsc2019
-      - RUNNER_TAGS=dockerizer
+## Other runner ......
 
 networks:
   gitlab_network:
