@@ -1,0 +1,18 @@
+[[runners]]
+  name = "build_runner"
+  url = "https://192.168.3.234:23443"
+  id = 10
+  token = "glrt-xPGszsm8V6f_QyecRyUS"
+  token_obtained_at = 2023-08-05T19:05:21Z
+  token_expires_at = 0001-01-01T00:00:00Z
+  executor = "docker"
+  [runners.docker]
+    tls_verify = false
+    image = "docker:stable"
+    privileged = false
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    disable_cache = false
+    volumes = ["/cache"]
+    shm_size = 0
+
