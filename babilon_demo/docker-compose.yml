@@ -1,17 +1,18 @@
 version: "3.6"
 services:
-  web:
+  gitlab:
     image: "dfulop98/my_gitlab_server:latest"
     container_name: babilon-gitlab
     restart: always
+    entrypoint: /entrypoint.sh
     ports:
       - "23080:80"
       - "23443:443"
       - "23022:22"
     volumes:
-      - "gitlab_config:/etc/gitlab"
       - "gitlab_logs:/var/log/gitlab"
       - "gitlab_data:/var/opt/gitlab"
+      - "./entrypoint.sh:/entrypoint.sh"
     shm_size: "5gb"
     networks:
       - gitlab_network
