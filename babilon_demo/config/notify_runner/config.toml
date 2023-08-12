@@ -6,10 +6,10 @@ shutdown_timeout = 0
   session_timeout = 1800
 
 [[runners]]
-  name = "build_runner"
+  name = "notify_runner"
   url = "https://192.168.3.240:23443"
   id = 37
-  token = "glrt-xPGszsm8V6f_QyecRyUS"
+  token = "glrt-DjqtSaKz6yg6V76ytx8v"
   token_obtained_at = 2023-08-12T21:26:28Z
   token_expires_at = 0001-01-01T00:00:00Z
   executor = "docker"
@@ -24,3 +24,4 @@ shutdown_timeout = 0
     disable_cache = false
     volumes = ["/cache"]
     shm_size = 0
+
