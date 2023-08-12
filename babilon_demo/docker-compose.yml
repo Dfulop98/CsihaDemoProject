@@ -16,28 +16,16 @@ services:
     networks:
       - gitlab_network
 
-  linux_runners:
+  runners:
     image: gitlab/gitlab-runner:latest
     networks:
       - gitlab_network
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./cert/ssl:/etc/gitlab-runner/certs/
-      - ./config/linux-runners:/etc/gitlab-runner
-    depends_on:
-      - gitlab
+      - ./config/runners:/etc/gitlab-runner
 
-  dockerizer_runner:
-    image: gitlab/gitlab-runner:latest
-    networks:
-      - gitlab_network
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./cert/ssl:/etc/gitlab-runner/certs/
-      - ./config/windows-runners:/etc/gitlab-runner
-    depends_on:
-      - gitlab
-
+    
+  
 volumes:
   gitlab_config:
   gitlab_data:
