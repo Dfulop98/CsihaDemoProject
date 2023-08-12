@@ -21,7 +21,12 @@ services:
     networks:
       - gitlab_network
     command:
-      - /bin/bash -c "./register-runner.sh && gitlab-runner run"
+      - /bin/bash
+      - -c
+      - |
+        chmod +x ./register-runner.sh
+        ./register-runner.sh
+        gitlab-runner run
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./cert/ssl:/etc/gitlab-runner/certs/
@@ -31,6 +36,13 @@ services:
     image: gitlab/gitlab-runner:latest
     networks:
       - gitlab_network
+    command:
+      - /bin/bash
+      - -c
+      - |
+        chmod +x ./register-runner.sh
+        ./register-runner.sh
+        gitlab-runner run
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./cert/ssl:/etc/gitlab-runner/certs/
@@ -40,6 +52,13 @@ services:
     image: gitlab/gitlab-runner:latest
     networks:
       - gitlab_network
+    command:
+      - /bin/bash
+      - -c
+      - |
+        chmod +x ./register-runner.sh
+        ./register-runner.sh
+        gitlab-runner run
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./cert/ssl:/etc/gitlab-runner/certs/
@@ -49,6 +68,13 @@ services:
     image: gitlab/gitlab-runner:latest
     networks:
       - gitlab_network
+    command:
+      - /bin/bash
+      - -c
+      - |
+        chmod +x ./register-runner.sh
+        ./register-runner.sh
+        gitlab-runner run
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./cert/ssl:/etc/gitlab-runner/certs/
