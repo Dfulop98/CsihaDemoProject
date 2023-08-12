@@ -16,41 +16,16 @@ services:
     networks:
       - gitlab_network
 
-  notification_runner:
+  linux_runners:
     image: gitlab/gitlab-runner:latest
     networks:
       - gitlab_network
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./cert/ssl:/etc/gitlab-runner/certs/
-      - ./config/notify_runner:/etc/gitlab-runner
-
-  build_runner:
-    image: gitlab/gitlab-runner:latest
-    networks:
-      - gitlab_network
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./cert/ssl:/etc/gitlab-runner/certs/
-      - ./config/build_runner:/etc/gitlab-runner
-
-  test_runner:
-    image: gitlab/gitlab-runner:latest
-    networks:
-      - gitlab_network
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./cert/ssl:/etc/gitlab-runner/certs/
-      - ./runner_registers/test_runner.sh:/register-runner.sh
-
-  archive_runner:
-    image: gitlab/gitlab-runner:latest
-    networks:
-      - gitlab_network
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./cert/ssl:/etc/gitlab-runner/certs/
-      - ./runner_registers/archive_runner.sh:/register-runner.sh
+      - ./config/linux-runners:/etc/gitlab-runner
+    depends_on:
+      - gitlab
 
   dockerizer_runner:
     image: gitlab/gitlab-runner:latest
@@ -59,7 +34,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./cert/ssl:/etc/gitlab-runner/certs/
-      - ./runner_registers/dockerizer_runner.sh:/register-runner.sh
+      - ./config/windows-runners:/etc/gitlab-runner
+    depends_on:
+      - gitlab
 
 volumes:
   gitlab_config:
