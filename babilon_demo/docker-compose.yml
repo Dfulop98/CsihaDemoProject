@@ -6,8 +6,11 @@ services:
     restart: always
     volumes:
       - "gitlab_config:/etc/gitlab"
-      - "gitlab_logs:/var/opt/gitlab"
+      - "gitlab_logs:/var/log/gitlab"
       - "gitlab_data:/var/opt/gitlab"
+      - "./backups:/var/opt/gitlab/backups"
+      - "./config_backups:/etc/gitlab"
+      - "./restore.sh:/restore.sh"
     ports:
       - "23080:80"
       - "23443:443"
@@ -24,8 +27,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config/runners:/etc/gitlab-runner
 
-    
-  
 volumes:
   gitlab_config:
   gitlab_data:

@@ -1,13 +1,11 @@
 # Alapkép beállítása
-FROM gitlab/gitlab-ce:latest
+FROM dfulop98/my_gitlab_server:latest
 
-COPY ./certs /etc/ssl
-# Környezeti változók beállítása
-ENV GITLAB_OMNIBUS_CONFIG="external_url 'https://192.168.3.240'; \
-    letsencrypt['enable'] = false; \
-    nginx['redirect_http_to_https'] = false; \
-    nginx['ssl_certificate'] = '/etc/ssl/192.168.3.240.crt'; \
-    nginx['ssl_certificate_key'] = '/etc/ssl/192.168.3.240.key'"
+COPY ./babilon_demo/restore.sh /restore.sh
+COPY ./babilon_demo/backups/ /var/opt/gitlab/backups/
+COPY ./babilon_demo/config_backups/ /etc/gitlab/config_backup/
 
-# SSL script és egyéb szükséges fájlok másolása a képbe
+RUN chmod +x /restore.sh
 
+
+# entrypoint sh modify and rebuild a new one try other restore from video

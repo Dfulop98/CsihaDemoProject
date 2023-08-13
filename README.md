@@ -309,39 +309,51 @@ If you wish to add a new user to our GitLab system without them having an existi
 
 By doing so, you've created a new user account without the user having an existing GitLab account. You can now add this user to projects or groups within the system.
 # Run demo project
+Unfortunately, due to the use of Windows, some Docker images have become quite large in size. The installation process is simple, but it requires a bit of patience
+
 Go to babilon_demo folder, simple run:
 ```
     docker-compose up -d
 ```
 This command will pull the project created by the test task from Docker Hub as an image and will start the runners set up for it. I've attached the login details in a private email, but those with expertise can log in without them.
+
+I wrote a script for the test task's settings and data, which is already contained in the running Docker container, so all you need to do is execute the following command:
+```
+    docker exec -it babilon-demo /restore.sh
+```
+
+After the test process is completed, the GitLab server can be accessed at the web address https://192.168.3.240:23443
+
+user: root
+
+password: 93380061
+
+
+## Gitlab Backup
+To ensure the project can be quickly and easily initiated on another system, a backup must be made from the GitLab server, which will then be restored on the other device.
+
+For this, we need to run the following commands:
+```
+    docker exec -t <container name> gitlab-backup create STRATEGY=copy
+```
+TODO: kell egy script ami megcsinálja az egészet , lofasz masolgatások ne nekik keljen
+## Gitlab Restore
+
 ## Optimizations
 
-What optimizations did you make in your code? E.g. refactors, performance improvements, accessibility
-
+- paralel futnak a pipeline egyes részei
+- telepítő scriptek
 
 ## Lessons Learned
 
-What did you learn while building this project? What challenges did you face and how did you overcome them?
-
-
+- legvégén ez a backup archive stb
+- a gitlab server rendes beállitása dockeren
+- amikor elsönek csináltam runnert az is jo moka
+- utolso feladat windows runner mindent megspékelt
+- nem csináltam még ilyet és nem láttam az elején a végét, ezért tul sok idöt pazaroltam azzal hogy megcsináltam vm linuxon
+-
 ## Documentation
 
  - [Gitlab Docs](https://docs.gitlab.com/)
  - [Docker Docs](https://docs.docker.com/)
  - [Twillio Sendgrid](https://app.sendgrid.com/login?redirect_to=%2F)
-
-## Screenshots
-
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
-
-
-## Usage/Examples
-
-```javascript
-import Component from 'my-project'
-
-function App() {
-  return <Component />
-}
-```
-
