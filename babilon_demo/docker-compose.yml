@@ -4,10 +4,15 @@ services:
     image: "dfulop98/babilon-demo:latest"
     container_name: babilon-test
     restart: always
+    hostname: https://192.168.3.240
+    environment:
+      GITLAB_OMNIBUB_CONFIG: |
+        external_url 'https://192.168.3.240'
     volumes:
       - "./config/gitlab/etc:/etc/gitlab"
-      - "gitlab_data:/var/opt/gitlab"
       - "gitlab_logs:/var/log/gitlab"
+      - "gitlab_data:/var/opt/gitlab"
+      - "./backups/data:/var/opt/gitlab/backups"
     ports:
       - "23080:80"
       - "23443:443"
@@ -25,9 +30,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config/runners:/etc/gitlab-runner
 volumes:
-  gitlab_data:
-  gitlab_logs:
+  gitlab_data: {}
+  gitlab_logs: {}
 
 networks:
   gitlab_network:
     external: true
+    
