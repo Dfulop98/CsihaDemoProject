@@ -4,6 +4,10 @@ services:
     image: "dfulop98/babilon-demo:latest"
     container_name: babilon-test
     restart: always
+    volumes:
+      - "./config/gitlab/etc:/etc/gitlab"
+      - "gitlab_data:/var/opt/gitlab"
+      - "gitlab_logs:/var/log/gitlab"
     ports:
       - "23080:80"
       - "23443:443"
@@ -20,6 +24,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config/runners:/etc/gitlab-runner
+volumes:
+  gitlab_data:
+  gitlab_logs:
 
 networks:
   gitlab_network:
