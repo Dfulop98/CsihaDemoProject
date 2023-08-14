@@ -336,22 +336,40 @@ For this, we need to run the following commands:
 ```
     docker exec -t <container name> gitlab-backup create STRATEGY=copy
 ```
-TODO: kell egy script ami megcsinálja az egészet , lofasz masolgatások ne nekik keljen
+
 ## Gitlab Restore
 
-## Optimizations
+First you need copy backup.tar back to the gitlab docker.
+```
+    docker cp ./backups/backups/1691990441_2023_08_14_16.2.3_gitlab_backup.tar [container_id]:/var/opt/gitlab/backups/
+```
 
-- paralel futnak a pipeline egyes részei
-- telepítő scriptek
+Then, stop all gitlab service:
+```
+    docker exec -it [container_id] gitlab-ctl stop unicorn
+    docker exec -it [container_id] gitlab-ctl stop puma
+    docker exec -it [container_id] gitlab-ctl stop sidekiq 
+```
 
-## Lessons Learned
+now, run restore command:
+```
+    docker exec -it [container_id] gitlab-backup restore BACKUP=1691990441_2023_08_14_16.2.3
+```
 
-- legvégén ez a backup archive stb
-- a gitlab server rendes beállitása dockeren
-- amikor elsönek csináltam runnert az is jo moka
-- utolso feladat windows runner mindent megspékelt
-- nem csináltam még ilyet és nem láttam az elején a végét, ezért tul sok idöt pazaroltam azzal hogy megcsináltam vm linuxon
--
+Copy back, the config, and secret files:
+```
+    docker cp ./backups/gitlab.rb [container_id]:/etc/gitlab/
+    docker cp ./backups/gitlab-secrets.json [container_id]:/etc/gitlab
+```
+And finally restart , reconfigur the server:
+```
+    docker exec -it [container_id] gitlab-ctl start unicorn
+    docker exec -it [container_id] gitlab-ctl start puma
+    docker exec -it [container_id] gitlab-ctl start sidekiq 
+    docker exec -it [container_id] gitlab-ctl reconfigure
+    docker exec -it [container_id] gitlab-ctl restart
+    docker exec -it [container_id] gitlab-rake gitlab:check SANITIZE=true
+```
 ## Documentation
 
  - [Gitlab Docs](https://docs.gitlab.com/)
