@@ -308,6 +308,19 @@ If you wish to add a new user to our GitLab system without them having an existi
 - Once completed, click the "Create User" button.
 
 By doing so, you've created a new user account without the user having an existing GitLab account. You can now add this user to projects or groups within the system.
+# Demo Project reproducate
+
+- First add users: 
+Left side in the sidebar:
+
+Admin area > Users : Here you can add a new users without a real profile behind them.
+- Create Group called demo
+- Create Babilon Project
+- In the starting repo you'll see the instruction to inject the source code with pipeline into it.
+- Next you need create a gitlab runners for the pipeline. Demo > Babilon > Settings > CI/CD (Sidebar)
+- Now you have to create a branches and make them protected : Setting > Protected branches
+- Add users to the project, with proper role: Demo > Babilon > Group > Members 
+- With the project_source code which is include the pipeline and with these setting your gitlab will working kinda simillar then mine. However have some step which i did mention in other sections, like ssh key setup.
 # Run demo project
 Unfortunately, due to the use of Windows, some Docker images have become quite large in size. The installation process is simple, but it requires a bit of patience
 
@@ -322,13 +335,13 @@ I wrote a script for the test task's settings and data, which is already contain
     docker exec -it babilon-demo /restore.sh
 ```
 
-After the test process is completed, the GitLab server can be accessed at the web address https://192.168.3.240:23443
+After the test process is completed, the GitLab server can be accessed at the web address https://localhost:23443
 
 user: root
 
 password: 93380061
 
-
+( I have issue with this part, unfortunatelly if i try to restore, the database somehow couse error, and a CI/CD settings pages not available. I still documenting this section but cannot recover the task project with it. Its really unusual reproducate the gitlab server with backup transfer, without teraform or any osc service, but these are make more complexity )
 ## Gitlab Backup
 To ensure the project can be quickly and easily initiated on another system, a backup must be made from the GitLab server, which will then be restored on the other device.
 
@@ -356,12 +369,12 @@ now, run restore command:
     docker exec -it [container_id] gitlab-backup restore BACKUP=1691990441_2023_08_14_16.2.3
 ```
 
-Copy back, the config, and secret files:
+Copy back, the config, and secret file:
 ```
     docker cp ./backups/gitlab.rb [container_id]:/etc/gitlab/
     docker cp ./backups/gitlab-secrets.json [container_id]:/etc/gitlab
 ```
-And finally restart , reconfigur the server:
+And finally restart , reconfigure the server:
 ```
     docker exec -it [container_id] gitlab-ctl start unicorn
     docker exec -it [container_id] gitlab-ctl start puma
@@ -375,3 +388,19 @@ And finally restart , reconfigur the server:
  - [Gitlab Docs](https://docs.gitlab.com/)
  - [Docker Docs](https://docs.docker.com/)
  - [Twillio Sendgrid](https://app.sendgrid.com/login?redirect_to=%2F)
+
+## Lessons Learned
+
+I would talk about these parts more detailed in face to face.
+
+I primarily trained myself to be a C# backend developer, so this task and many of the technologies used were quite new to me. I tried my best to research the necessary things I wasn't familiar with.
+
+Firstly, I would mention the GitLab server. I had previous experience with Git systems and regularly use GitHub for code sharing. However, GitLab itself was unknown to me until now. Despite this, it's quite user-friendly, and the full installation and configuration of GitLab on a Linux system didn't take even a day.
+
+The completion of the project code and the pipeline processes, scripts, were not unfamiliar to me. I didn't face major challenges at this part. It was the GitLab runner that I had to look more into. However, I did not fully utilize the opportunities offered by SendGrid for sending emails and the transparency provided by the GitLab server. To keep it simple, I send emails using a basic curl script through an API.
+
+I had the idea to make the project launchable via docker-compose, allowing me to test the same project I worked on on another device. However, since I didn't have an extensive knowledge of Docker, I didn't realize that it wasn't that simple, and my approach might not be the most appropriate. I recognized that the Docker image I was using wouldn't include the modifications made on the GitLab server upon commit since the image inherently uses a locally created volume for these backups. After discovering this issue during final testing on a different computer, I quickly delved into other alternatives. I tried creating backups and restoring them, which was the closest solution I found so far. Unfortunately, due to database errors, the CI/CD settings page is not accessible on the user interface. I tried using storage containers made from an Alpine image, but unfortunately, this also did not lead to a solution. This was the critical part of the task that caused me to fall behind, and it's why I'm now making these minor adjustments.
+
+In retrospect, looking over the project, during the installation scripts, for some inexplicable reason, I tried to merge the local IP with the GitLab server URL, which is completely unnecessary since the server will already be accessible on localhost. During the docker-compose process, I use an external network for the communication between the GitLab server and the runners, which is also a redundant step since they can already communicate on an internal network.
+
+It was a truly enlightening and interesting task. I learned a lot from it, and now, in hindsight, I would approach it completely differently.
